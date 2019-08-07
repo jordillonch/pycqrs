@@ -1,11 +1,17 @@
+import inspect
+
 from common.cqrs.buses.query.domain.query import Query
 from common.cqrs.buses.query.domain.query_bus import QueryBus
 from common.cqrs.buses.query.domain.query_handler import QueryHandler
 
 
 class SimpleQueryBus(QueryBus):
+    __handlers = {}
+
     def register(self, handler: QueryHandler):
-        pass
+        queryType = inspect.signature(handler.on).parameters["query"].annotation
+        self.__handlers[queryType] = handler
 
     def handle(self, query: Query):
-        pass
+        queryType = type(query)
+        return self.__handlers[queryType].on(query)
